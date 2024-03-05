@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <stdint.h>
+#include <string.h>
 #include <stdio.h>
 #include <netinet/in.h>
 
@@ -47,7 +48,7 @@ int main() {
     /* bind socket to 127.0.0.1:4080 */
     struct sockaddr_in address = {
         .sin_family = AF_INET,
-        .sin_port = 4080,
+        .sin_port = 5080,
         .sin_addr = INADDR_ANY,
     };
 
@@ -122,10 +123,28 @@ int main() {
     }
 
     struct sockaddr_in peer_address = (struct sockaddr_in){ 0 };
-    printf("Waiting for connection...\n");
     socklen_t peer_address_size = sizeof(peer_address);
-    int32_t cfd = accept(sfd, (struct sockaddr*)&peer_address, &peer_address_size);
 
+    printf("Waiting for connection...\n");
+    int32_t cfd;
+    uint8_t buffer[2048] = { 0 };
+    while (1) {
+        cfd = accept(sfd, (struct sockaddr*)&peer_address, &peer_address_size);
+        printf("Connection received!\n");
+        errno = 0;
+        while (1) {
+            int32_t code = recv(sfd, buffer, sizeof(buffer), 0);
+            if (code == -1) {
+                printf("\nERROR: An error has occurred in 'recv'\n");
+                break;
+            }
+            printf("%s", buffer);
+            // wipe string buffer
+            memset(buffer, '\0', sizeof(buffer));
+        }
+    }
+
+    printf("Closing socket...\n");
     close(sfd);
 
     return 0;
