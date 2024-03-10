@@ -1,2 +1,2 @@
 build:
-	gcc main.c -o sockets
+	gcc main.c -o sockets -g

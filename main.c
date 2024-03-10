@@ -6,7 +6,74 @@
 #include <string.h>
 #include <stdio.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
+#include "main.h"
+
+/*
+ * A simple web server in C.
+ */
+int main() {
+    errno = 0;
+    int32_t sfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    if (errno != 0) {
+        print_socket_err(errno);
+        return 1;
+    }
+
+    /* bind socket to 127.0.0.1:4080 */
+    struct sockaddr_in address = {
+        .sin_family = AF_INET,
+        .sin_port = htons(4444),
+        .sin_addr = INADDR_ANY,
+    };
+
+    errno = 0;
+    uint32_t result = bind(sfd, (struct sockaddr *)&address, sizeof(address));
+
+    if (errno != 0) {
+        print_bind_err(errno);
+        return 1;
+    }
+
+    errno = 0;
+    if (listen(sfd, 50) == -1) {
+        print_listen_err(errno);
+    }
+
+    struct sockaddr_in peer_address = (struct sockaddr_in){ 0 };
+    socklen_t peer_address_size = sizeof(peer_address);
+
+    printf("Waiting for connection...\n");
+    int32_t cfd;
+    uint8_t buffer[10] = { 0 };
+    while (1) {
+        cfd = accept(sfd, (struct sockaddr*)&peer_address, &peer_address_size);
+        printf("Connection received!\n");
+        while (1) {
+            errno = 0;
+            printf("Checking with recvfrom...\n");
+            printf("buffer size = %lu\n", sizeof(buffer));
+            ssize_t length = recvfrom(cfd, buffer, sizeof(buffer), MSG_PEEK, NULL, NULL);
+
+            if (length > 0) {
+                printf("%s", buffer);
+                // wipe string buffer
+                memset(buffer, '\0', sizeof(buffer));
+
+                send(cfd, HTTP_RESPONSE, sizeof(HTTP_RESPONSE), 0);
+                close(cfd);
+                break;
+            }
+        }
+    }
+
+    printf("Closing socket...\n");
+    close(sfd);
+
+    return 0;
+}
 
 void print_socket_err(int err) {
     printf("ERROR: ");
@@ -146,63 +213,4 @@ void print_recv_err(int err) {
         default:
             break;
     }
-}
-
-/*
- * A simple web server in C.
- */
-int main() {
-    errno = 0;
-    int32_t sfd = socket(AF_INET, SOCK_STREAM, 0);
-
-    if (errno != 0) {
-        print_socket_err(errno);
-        return 1;
-    }
-
-    /* bind socket to 127.0.0.1:4080 */
-    struct sockaddr_in address = {
-        .sin_family = AF_INET,
-        .sin_port = 5080,
-        .sin_addr = INADDR_ANY,
-    };
-
-    errno = 0;
-    uint32_t result = bind(sfd, (struct sockaddr *)&address, sizeof(address));
-
-    if (errno != 0) {
-        print_bind_err(errno);
-        return 1;
-    }
-
-    errno = 0;
-    if (listen(sfd, 50) == -1) {
-        print_listen_err(errno);
-    }
-
-    struct sockaddr_in peer_address = (struct sockaddr_in){ 0 };
-    socklen_t peer_address_size = sizeof(peer_address);
-
-    printf("Waiting for connection...\n");
-    int32_t cfd;
-    uint8_t buffer[2048] = { 0 };
-    while (1) {
-        cfd = accept(sfd, (struct sockaddr*)&peer_address, &peer_address_size);
-        printf("Connection received!\n");
-        while (1) {
-            errno = 0;
-            if (recvfrom(cfd, buffer, sizeof(buffer), MSG_PEEK, NULL, NULL)) {
-                print_recv_err(errno);
-                break;
-            }
-            printf("%s", buffer);
-            // wipe string buffer
-            memset(buffer, '\0', sizeof(buffer));
-        }
-    }
-
-    printf("Closing socket...\n");
-    close(sfd);
-
-    return 0;
 }
