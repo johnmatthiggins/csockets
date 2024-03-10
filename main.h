@@ -1,11 +1,12 @@
-#define HTTP_RESPONSE "HTTP/1.1 200 OK\r\n"\
-                      "Content-Type: application/json\r\n"\
-                      "Content-Length: 30\r\n"\
+#define HTTP_RESPONSE "HTTP/1.0 200 OK\r\n"\
+                      "Content-Type: text/html\r\n"\
+                      "Content-Length: 87\r\n"\
                       "Server: Little C Server\r\n"\
                       "\r\n"\
-                      "{ message: \"Hello world!\" }\r\n"
+                      "<!DOCTYPE HTML><html><body><h1>Bonjour!</h1></body></html>\r\n"
 
 #define BUFFER_LEN 1024
+#define PORT 4444
 
 /* prints error codes for socket() function. */
 void print_socket_err(int err);
@@ -18,3 +19,9 @@ void print_listen_err(int err);
 
 /* prints error codes for recv() function. */
 void print_recv_err(int err);
+
+/* reads body of http request into buffer */
+int read_body(char* http_request, char* buffer, size_t buffer_len);
+
+/* Handles when user hits CTRL-C */
+void handle_interrupt(int sig);

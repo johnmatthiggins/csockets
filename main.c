@@ -7,30 +7,43 @@
 #include <stdio.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <signal.h>
+#include <fcntl.h>
 
 #include "main.h"
+
+int connection_fd;
 
 /*
  * A simple web server in C.
  */
 int main() {
+    signal(SIGINT, handle_interrupt);
+
     errno = 0;
-    int32_t sfd = socket(AF_INET, SOCK_STREAM, 0);
+    int socket_fd= socket(AF_INET, SOCK_STREAM, 0);
 
     if (errno != 0) {
         print_socket_err(errno);
         return 1;
     }
-
     /* bind socket to 127.0.0.1:4080 */
     struct sockaddr_in address = {
+        // IPv4 Address Family
         .sin_family = AF_INET,
-        .sin_port = htons(4444),
-        .sin_addr = INADDR_ANY,
+        // Convert to Network Byte order (Big Endian)
+        .sin_port = htons(PORT),
+        // 0.0.0.0
+        .sin_addr = inet_addr("0.0.0.0"),
     };
 
     errno = 0;
-    uint32_t result = bind(sfd, (struct sockaddr *)&address, sizeof(address));
+    int result = bind(socket_fd, (struct sockaddr *)&address, sizeof(address));
+    if (errno == EADDRINUSE) {
+        address.sin_port = htons(PORT + 1);
+        errno = 0;
+        result = bind(socket_fd, (struct sockaddr *)&address, sizeof(address));
+    }
 
     if (errno != 0) {
         print_bind_err(errno);
@@ -38,40 +51,38 @@ int main() {
     }
 
     errno = 0;
-    if (listen(sfd, 50) == -1) {
+    if (listen(socket_fd, 50) == -1) {
         print_listen_err(errno);
     }
 
     struct sockaddr_in peer_address = (struct sockaddr_in){ 0 };
     socklen_t peer_address_size = sizeof(peer_address);
 
-    printf("Waiting for connection...\n");
-    int32_t cfd;
-    uint8_t buffer[BUFFER_LEN] = { 0 };
-    while (1) {
-        cfd = accept(sfd, (struct sockaddr*)&peer_address, &peer_address_size);
+    printf("Waiting for connection at http://localhost:%d\n", PORT);
+
+    int connection_fd;
+    char buffer[BUFFER_LEN] = { 0 };
+    for (;;) {
+        connection_fd = accept(socket_fd, (struct sockaddr*)&peer_address, &peer_address_size);
         printf("Connection received!\n");
-        while (1) {
-            errno = 0;
-            printf("Checking with recvfrom...\n");
-            printf("buffer size = %lu\n", sizeof(buffer));
-            ssize_t length = recvfrom(cfd, buffer, sizeof(buffer), MSG_PEEK, NULL, NULL);
+        errno = 0;
+        printf("Checking with recvfrom...\n");
+        printf("buffer size = %lu\n", sizeof(buffer));
+        ssize_t length = recvfrom(connection_fd, buffer, sizeof(buffer), MSG_PEEK, NULL, NULL);
 
-            if (length > 0) {
-                printf("****** REQUEST ******\n%s\n", buffer);
-                // wipe string buffer
-                memset(buffer, '\0', sizeof(buffer));
+        if (length > 0) {
+            printf("****** REQUEST ******\n%s\n", buffer);
+            memset(buffer, 0, sizeof(buffer));
 
-                send(cfd, HTTP_RESPONSE, sizeof(HTTP_RESPONSE), 0);
-                printf("****** RESPONSE ******\n%s\n", HTTP_RESPONSE);
-                close(cfd);
-                break;
-            }
+            send(connection_fd, HTTP_RESPONSE, strlen(HTTP_RESPONSE), 0);
+            printf("****** RESPONSE ******\n%s\n", HTTP_RESPONSE);
+
+            close(connection_fd);
         }
     }
 
     printf("Closing socket...\n");
-    close(sfd);
+    close(socket_fd);
 
     return 0;
 }
@@ -214,4 +225,11 @@ void print_recv_err(int err) {
         default:
             break;
     }
+}
+
+void handle_interrupt(int sig) {
+    printf("Ctrl-C detected...\n");
+    printf("Closing sockets...\n");
+    close(connection_fd);
+    _exit(1);
 }
