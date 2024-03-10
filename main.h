@@ -2,7 +2,7 @@
                       "Content-Type: text/html\r\n"\
                       "Content-Length: %lu\r\n"\
                       "Server: Little C Server\r\n"\
-                      "\r\n%s"
+                      "\r\n%s\r\n"
 
 #define HTML_BODY "<!doctype html><html><body><h1>Bonjour!</h1></body></html>"
 
