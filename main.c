@@ -47,7 +47,7 @@ int main() {
 
     printf("Waiting for connection...\n");
     int32_t cfd;
-    uint8_t buffer[10] = { 0 };
+    uint8_t buffer[BUFFER_LEN] = { 0 };
     while (1) {
         cfd = accept(sfd, (struct sockaddr*)&peer_address, &peer_address_size);
         printf("Connection received!\n");
@@ -58,11 +58,12 @@ int main() {
             ssize_t length = recvfrom(cfd, buffer, sizeof(buffer), MSG_PEEK, NULL, NULL);
 
             if (length > 0) {
-                printf("%s", buffer);
+                printf("****** REQUEST ******\n%s\n", buffer);
                 // wipe string buffer
                 memset(buffer, '\0', sizeof(buffer));
 
                 send(cfd, HTTP_RESPONSE, sizeof(HTTP_RESPONSE), 0);
+                printf("****** RESPONSE ******\n%s\n", HTTP_RESPONSE);
                 close(cfd);
                 break;
             }

@@ -4,6 +4,8 @@
                       "Server: Little C Server\r\n\r\n"\
                       "{ message: \"Hello world!\" }\r\n\x04"
 
+#define BUFFER_LEN 1024
+
 /* prints error codes for socket() function. */
 void print_socket_err(int err);
 
