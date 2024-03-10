@@ -1,9 +1,10 @@
-#define HTTP_RESPONSE "HTTP/1.0 200 OK\r\n"\
+#define HTTP_RESPONSE_F_STR "HTTP/1.0 200 OK\r\n"\
                       "Content-Type: text/html\r\n"\
-                      "Content-Length: 87\r\n"\
+                      "Content-Length: %lu\r\n"\
                       "Server: Little C Server\r\n"\
-                      "\r\n"\
-                      "<!DOCTYPE HTML><html><body><h1>Bonjour!</h1></body></html>\r\n"
+                      "\r\n%s"
+
+#define HTML_BODY "<!doctype html><html><body><h1>Bonjour!</h1></body></html>\r\n"
 
 #define BUFFER_LEN 1024
 #define PORT 4444

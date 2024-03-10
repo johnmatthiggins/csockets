@@ -1,2 +1,6 @@
 build:
-	gcc main.c -o sockets -g
+	clang main.c -o sockets -g
+
+format:
+	clang-format main.c > main.c
+

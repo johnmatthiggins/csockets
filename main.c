@@ -62,6 +62,7 @@ int main() {
 
     int connection_fd;
     char buffer[BUFFER_LEN] = { 0 };
+
     for (;;) {
         connection_fd = accept(socket_fd, (struct sockaddr*)&peer_address, &peer_address_size);
         printf("Connection received!\n");
@@ -73,9 +74,11 @@ int main() {
         if (length > 0) {
             printf("****** REQUEST ******\n%s\n", buffer);
             memset(buffer, 0, sizeof(buffer));
+            snprintf(buffer, sizeof(buffer), HTTP_RESPONSE_F_STR, sizeof(HTML_BODY), HTML_BODY);
 
-            send(connection_fd, HTTP_RESPONSE, strlen(HTTP_RESPONSE), 0);
-            printf("****** RESPONSE ******\n%s\n", HTTP_RESPONSE);
+            send(connection_fd, buffer, strlen(buffer), 0);
+            printf("****** RESPONSE ******\n%s\n", buffer);
+            memset(buffer, 0, sizeof(buffer));
 
             close(connection_fd);
         }
