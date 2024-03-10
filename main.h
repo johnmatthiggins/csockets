@@ -4,7 +4,7 @@
                       "Server: Little C Server\r\n"\
                       "\r\n%s\r\n"
 
-#define HTML_BODY "<!doctype html><html><body><h1>Bonjour!</h1></body></html>"
+#define HTML_BODY "<!doctype html><html><body><h1>Hello world!</h1></body></html>"
 
 #define BUFFER_LEN 1024
 #define PORT 4444
