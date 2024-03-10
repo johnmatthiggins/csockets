@@ -1,7 +1,8 @@
 #define HTTP_RESPONSE "HTTP/1.1 200 OK\r\n"\
                       "Content-Type: application/json\r\n"\
                       "Content-Length: 30\r\n"\
-                      "Server: Little C Server\r\n\r\n"\
+                      "Server: Little C Server\r\n"\
+                      "\r\n"\
                       "{ message: \"Hello world!\" }\r\n"
 
 #define BUFFER_LEN 1024
