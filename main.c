@@ -21,7 +21,7 @@ int main() {
     signal(SIGINT, handle_interrupt);
 
     errno = 0;
-    int socket_fd= socket(AF_INET, SOCK_STREAM, 0);
+    int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (errno != 0) {
         print_socket_err(errno);
@@ -33,8 +33,7 @@ int main() {
         .sin_family = AF_INET,
         // Convert to Network Byte order (Big Endian)
         .sin_port = htons(PORT),
-        // 0.0.0.0
-        .sin_addr = inet_addr("0.0.0.0"),
+        .sin_addr = inet_addr("127.0.0.1"),
     };
 
     errno = 0;
@@ -230,9 +229,13 @@ void print_recv_err(int err) {
     }
 }
 
+int read_body(char* http_request, char* buffer, size_t buffer_len) {
+}
+
 void handle_interrupt(int sig) {
     printf("Ctrl-C detected...\n");
     printf("Closing sockets...\n");
     close(connection_fd);
     _exit(1);
 }
+
