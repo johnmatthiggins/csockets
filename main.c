@@ -1,14 +1,15 @@
+#include <arpa/inet.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <netinet/in.h>
+#include <signal.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <signal.h>
-#include <fcntl.h>
 
 #include "main.h"
 
@@ -54,16 +55,21 @@ int main() {
         print_listen_err(errno);
     }
 
-    struct sockaddr_in peer_address = (struct sockaddr_in){ 0 };
-    socklen_t peer_address_size = sizeof(peer_address);
+    struct sockaddr_in peer = { 0, 0, 0 };
+    socklen_t peer_size = sizeof(peer);
 
     printf("Waiting for connection at http://localhost:%d\n", PORT);
 
     int connection_fd;
     char buffer[BUFFER_LEN] = { 0 };
 
-    for (;;) {
-        connection_fd = accept(socket_fd, (struct sockaddr*)&peer_address, &peer_address_size);
+    while (true) {
+        connection_fd = accept(
+                socket_fd,
+                (struct sockaddr*)&peer,
+                &peer_size
+        );
+
         printf("Connection received!\n");
         errno = 0;
         printf("Checking with recvfrom...\n");
@@ -229,8 +235,8 @@ void print_recv_err(int err) {
     }
 }
 
-int read_body(char* http_request, char* buffer, size_t buffer_len) {
-}
+/* int read_body(char* http_request, char* buffer, size_t buffer_len) { */
+/* } */
 
 void handle_interrupt(int sig) {
     printf("Ctrl-C detected...\n");
