@@ -4,18 +4,11 @@
 #define HTTP_RESPONSE_F_STR "HTTP/1.0 200 OK\r\n"\
                       "Content-Type: text/html\r\n"\
                       "Content-Length: %lu\r\n"\
-                      "Server: Little C Server\r\n"\
+                      "Server: C Echo Server\r\n"\
                       "\r\n%s\r\n"
 
-#define HTML_BODY "<!doctype html>\r\n"\
-                  "<html lang=\"en\">\r\n"\
-                  "  <head><meta charset=\"UTF-8\"></head>\r\n"\
-                  "  <body>\r\n"\
-                  "    <h1>Hello world!</h1>\r\n"\
-                  "  </body>\r\n"\
-                  "</html>\r\n"
-
-#define BUFFER_LEN 1024
+// Use one megabyte buffer to read in requests...
+#define BUFFER_LEN 1000000
 #define PORT 4444
 
 /* prints error codes for socket() function. */
@@ -31,7 +24,7 @@ void print_listen_err(int err);
 void print_recv_err(int err);
 
 /* reads body of http request into buffer */
-int read_body(char* http_request, char* buffer, size_t buffer_len);
+int read_body(char* http_request, size_t request_len, char* buffer, size_t buffer_len);
 
 /* Handles when user hits CTRL-C */
 void handle_interrupt(int sig);

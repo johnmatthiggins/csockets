@@ -78,12 +78,16 @@ int main() {
 
         if (length > 0) {
             printf("****** REQUEST ******\n%s\n", buffer);
+
+            char* response_body = (char*)calloc(length, sizeof(char));
+            int body_size = read_body(buffer, length, response_body, length);
             memset(buffer, 0, sizeof(buffer));
-            snprintf(buffer, sizeof(buffer), HTTP_RESPONSE_F_STR, sizeof(HTML_BODY), HTML_BODY);
+            snprintf(buffer, sizeof(buffer), HTTP_RESPONSE_F_STR, body_size, response_body);
 
             send(connection_fd, buffer, strlen(buffer), 0);
             printf("****** RESPONSE ******\n%s\n", buffer);
             memset(buffer, 0, sizeof(buffer));
+            free(response_body);
 
             close(connection_fd);
         }
@@ -235,8 +239,22 @@ void print_recv_err(int err) {
     }
 }
 
-/* int read_body(char* http_request, char* buffer, size_t buffer_len) { */
-/* } */
+// Assumes line endings are CRLF
+int read_body(char* http_request, size_t request_len, char* buffer, size_t buffer_len) {
+    // Loop until we find two line breaks next to each other.
+    size_t i = 0;
+
+    printf("READ BODY");
+    char* body_start = strstr(http_request, "\r\n\r\n") + 4;
+    size_t content_length = request_len - (size_t)(body_start - http_request);
+
+    while (i < content_length) {
+        buffer[i] = body_start[i];
+        i++;
+    }
+
+    return content_length;
+}
 
 void handle_interrupt(int sig) {
     printf("Ctrl-C detected...\n");
