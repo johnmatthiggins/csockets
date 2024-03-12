@@ -8,7 +8,7 @@
                       "\r\n%s\r\n"
 
 // Use one megabyte buffer to read in requests...
-#define BUFFER_LEN 1000000
+#define ONE_MiB (0x1 << 20)
 #define PORT 4444
 
 /* prints error codes for socket() function. */

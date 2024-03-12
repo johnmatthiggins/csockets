@@ -14,6 +14,7 @@
 #include "main.h"
 
 int connection_fd;
+int socket_fd;
 
 /*
  * A simple web server in C.
@@ -22,13 +23,13 @@ int main() {
     signal(SIGINT, handle_interrupt);
 
     errno = 0;
-    int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+    socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (errno != 0) {
         print_socket_err(errno);
         return 1;
     }
-    /* bind socket to 127.0.0.1:4080 */
+    /* bind socket to 127.0.0.1:4444 */
     struct sockaddr_in address = {
         // IPv4 Address Family
         .sin_family = AF_INET,
@@ -61,7 +62,7 @@ int main() {
     printf("Waiting for connection at http://localhost:%d\n", PORT);
 
     int connection_fd;
-    char buffer[BUFFER_LEN] = { 0 };
+    char buffer[ONE_MiB] = { 0 };
 
     while (true) {
         connection_fd = accept(
@@ -259,6 +260,7 @@ void handle_interrupt(int sig) {
     printf("Ctrl-C detected...\n");
     printf("Closing sockets...\n");
     close(connection_fd);
+    close(socket_fd);
     _exit(1);
 }
 
