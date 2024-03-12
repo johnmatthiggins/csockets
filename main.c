@@ -29,31 +29,27 @@ int main() {
         print_socket_err(errno);
         return 1;
     }
+
     /* bind socket to 127.0.0.1:4444 */
     struct sockaddr_in address = {
         // IPv4 Address Family
         .sin_family = AF_INET,
         // Convert to Network Byte order (Big Endian)
         .sin_port = htons(PORT),
-        .sin_addr = inet_addr("127.0.0.1"),
+        .sin_addr = inet_addr(IP_ADDRESS),
     };
 
     errno = 0;
     int result = bind(socket_fd, (struct sockaddr *)&address, sizeof(address));
-    if (errno == EADDRINUSE) {
-        address.sin_port = htons(PORT + 1);
-        errno = 0;
-        result = bind(socket_fd, (struct sockaddr *)&address, sizeof(address));
-    }
-
     if (errno != 0) {
         print_bind_err(errno);
-        return 1;
+        return EXIT_FAILURE;
     }
 
     errno = 0;
     if (listen(socket_fd, 50) == -1) {
         print_listen_err(errno);
+        return EXIT_FAILURE;
     }
 
     struct sockaddr_in peer = { 0, 0, 0 };
@@ -62,7 +58,7 @@ int main() {
     printf("Waiting for connection at http://localhost:%d\n", PORT);
 
     int connection_fd;
-    char buffer[ONE_MiB] = { 0 };
+    char buffer[ONE_KiB] = { 0 };
 
     while (true) {
         connection_fd = accept(
@@ -73,22 +69,17 @@ int main() {
 
         printf("Connection received!\n");
         errno = 0;
-        printf("Checking with recvfrom...\n");
-        printf("buffer size = %lu\n", sizeof(buffer));
         ssize_t length = recvfrom(connection_fd, buffer, sizeof(buffer), MSG_PEEK, NULL, NULL);
 
         if (length > 0) {
-            printf("****** REQUEST ******\n%s\n", buffer);
-
-            char* response_body = (char*)calloc(length, sizeof(char));
+            char response_body[ONE_KiB] = { 0 };
             size_t body_size = read_body(buffer, length, response_body, length);
             memset(buffer, 0, sizeof(buffer));
             snprintf(buffer, sizeof(buffer), HTTP_RESPONSE_F_STR, body_size, response_body);
 
             send(connection_fd, buffer, strlen(buffer), 0);
-            printf("****** RESPONSE ******\n%s\n", buffer);
             memset(buffer, 0, sizeof(buffer));
-            free(response_body);
+            memset(response_body, 0, sizeof(response_body));
 
             close(connection_fd);
         }
@@ -97,7 +88,7 @@ int main() {
     printf("Closing socket...\n");
     close(socket_fd);
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 void print_socket_err(int err) {

@@ -7,9 +7,10 @@
                       "Server: C Echo Server\r\n"\
                       "\r\n%s\r\n"
 
-// Use one megabyte buffer to read in requests...
-#define ONE_MiB (0x1 << 20)
+// Use one kilobyte buffer to read in requests...
+#define ONE_KiB 0x400
 #define PORT 4444
+#define IP_ADDRESS "127.0.0.1"
 
 /* prints error codes for socket() function. */
 void print_socket_err(int err);
