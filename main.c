@@ -58,7 +58,7 @@ int main() {
     printf("Waiting for connection at http://localhost:%d\n", PORT);
 
     int connection_fd;
-    char buffer[ONE_KiB] = { 0 };
+    char buffer[0x1000] = { 0 };
 
     while (true) {
         connection_fd = accept(
@@ -72,7 +72,7 @@ int main() {
         ssize_t length = recvfrom(connection_fd, buffer, sizeof(buffer), MSG_PEEK, NULL, NULL);
 
         if (length > 0) {
-            char response_body[ONE_KiB] = { 0 };
+            char response_body[0x1000] = { 0 };
             size_t body_size = read_body(buffer, length, response_body, length);
             memset(buffer, 0, sizeof(buffer));
             snprintf(buffer, sizeof(buffer), HTTP_RESPONSE_F_STR, body_size, response_body);
