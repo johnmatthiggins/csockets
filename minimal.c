@@ -49,13 +49,11 @@ int main(int argc, char* argv[]) {
 
         char request_buffer[0x1000] = { 0 };
 
-        ssize_t request_length = recvfrom(
+        ssize_t request_length = recv(
             connection_fd,
             request_buffer,
             sizeof(request_buffer),
-            MSG_PEEK,
-            NULL,
-            NULL
+            MSG_PEEK
         );
 
         if (request_length > 0) {
@@ -74,8 +72,6 @@ int main(int argc, char* argv[]) {
 
             response_buffer[response_length] = '\r';
             response_buffer[response_length + 1] = '\n';
-
-            printf("%s\n", response_buffer);
 
             send(connection_fd, response_buffer, response_length, 0);
         }
