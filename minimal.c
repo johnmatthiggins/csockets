@@ -56,26 +56,23 @@ int main(int argc, char* argv[]) {
             MSG_PEEK
         );
 
-        if (request_length > 0) {
-            char* body_start = strstr(request_buffer, "\r\n\r\n") + 4;
-            size_t header_length = (size_t)(body_start - request_buffer);
-            size_t body_length = request_length - header_length;
+        char* body_start = strstr(request_buffer, "\r\n\r\n") + 4;
+        size_t header_length = (size_t)(body_start - request_buffer);
+        size_t body_length = request_length - header_length;
 
-            char response_buffer[0x1000]  = { 0 };
-            snprintf(response_buffer, sizeof(response_buffer), HTTP_HEADER_F_STR, body_length);
+        char response_buffer[0x1000]  = { 0 };
+        snprintf(response_buffer, sizeof(response_buffer), HTTP_HEADER_F_STR, body_length);
 
-            char* response_body_start = strstr(response_buffer, "\r\n\r\n") + 4;
-            memcpy(response_body_start, body_start, body_length);
+        char* response_body_start = strstr(response_buffer, "\r\n\r\n") + 4;
+        memcpy(response_body_start, body_start, body_length);
 
-            size_t response_header_length = (size_t)(response_body_start - response_buffer);
-            size_t response_length = response_header_length + body_length;
+        size_t response_header_length = (size_t)(response_body_start - response_buffer);
+        size_t response_length = response_header_length + body_length;
 
-            response_buffer[response_length] = '\r';
-            response_buffer[response_length + 1] = '\n';
+        response_buffer[response_length] = '\r';
+        response_buffer[response_length + 1] = '\n';
 
-            send(connection_fd, response_buffer, response_length, 0);
-        }
-
+        send(connection_fd, response_buffer, response_length + 2, 0);
         close(connection_fd);
     }
 
