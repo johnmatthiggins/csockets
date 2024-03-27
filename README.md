@@ -1,5 +1,4 @@
 # Echo Server
----
 This repository contains two files:
 * `main.c`: A simple web server written in C that echoes
 HTTP requests that are sent to it.
